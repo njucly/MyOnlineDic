@@ -177,7 +177,249 @@ public class ShowDictionary extends JFrame{
 		biying.setVisible(false);
 		
 		
+		addWindowListener(new WindowAdapter()                                           //退出键的监听
+		{
+			public void windowClosing(WindowEvent e) 
+			{
+				int option = JOptionPane.showConfirmDialog(null,"确定要退出吗？","提示",JOptionPane.OK_CANCEL_OPTION);
+			    if (JOptionPane.OK_OPTION == option) 
+			    {
+			      //点击了确定按钮
+			      try
+			      {
+			    	if(userName != null)  
+					{
+			    		toServer.writeInt(6);                                 //向Server发出退出请求，Server修改islogin状态
+			    		toServer.writeUTF(userName);
+					}		
+					
+				  } 
+			      catch (IOException e1) 
+			      {
+					e1.printStackTrace();
+				  }
+			      System.exit(0);
+			    }
+			    else
+			    	ShowDictionary.this.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
+			}
+		});
+		register.addActionListener(new ActionListener()									//注册按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				Register();
+			}
+		});
+		
+		login.addActionListener(new ActionListener()								    //登录按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				Login();
+			}
+		});
+		
+		search.addActionListener(new ActionListener()									//查询按钮监听
+		{
+			
+			public void actionPerformed(ActionEvent e)
+			{
+				if(!input.getText().matches("^[a-zA-Z]*"))
+				{
+					JOptionPane.showMessageDialog(null, "请输入英文！", "Warning!",JOptionPane.WARNING_MESSAGE); 
+					input.setText("");
+				}
+
+				
+				
+				else if(!input.getText().equals(""))
+				{
+					baidu.setVisible(false);
+					youdao.setVisible(false);
+					biying.setVisible(false);
+					try
+					{
+						toServer.writeInt(7);
+						toServer.writeUTF(input.getText());
+					} 
+				
+					catch (IOException e1) 
+					{
+						e1.printStackTrace();
+					} 
+				}
+			}
+		});
+		
+		input.addKeyListener(new KeyAdapter()
+		{
+			public void keyReleased(KeyEvent e) 
+			{
+				if(e.getKeyCode() == KeyEvent.VK_ENTER)
+				{
+					if(!input.getText().matches("^[a-zA-Z]*"))
+					{
+						JOptionPane.showMessageDialog(null, "请输入英文！", "Warning!",JOptionPane.WARNING_MESSAGE); 
+						input.setText("");
+					}
+					else if(!input.getText().equals(""))
+					{
+						baidu.setVisible(false);
+						youdao.setVisible(false);
+						biying.setVisible(false);
+						try
+						{
+							toServer.writeInt(7);
+							toServer.writeUTF(input.getText());
+						} 
+						
+						catch (IOException e1) 
+						{
+							e1.printStackTrace();
+						} 
+					}
+				}
+			}
+		});
+		
+		baiduSendCard.addActionListener(new ActionListener()								//百度发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e) 
+			{
+				sendCard(0);
+			}
+		});
+		youdaoSendCard.addActionListener(new ActionListener()								//有道发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				sendCard(1);
+			}
+		});
+		biyingSendCard.addActionListener(new ActionListener()								//必应发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				sendCard(2);
+			}
+		});
+		baiduSendAll.addActionListener(new ActionListener()								//百度发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				sendCard(3);
+			}
+		});
+		youdaoSendAll.addActionListener(new ActionListener()								//有道发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				sendCard(4);
+			}
+		});
+		biyingSendAll.addActionListener(new ActionListener()								//必应发单词卡按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				sendCard(5);
+			}
+		});
+		baiduPraise.addActionListener(new ActionListener()									//百度点赞按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				try 
+				{
+					toServer.writeInt(2);     //请求更新点赞
+					toServer.writeInt(1);      //baidu
+					toServer.writeUTF(input.getText());
+				}
+				catch (IOException e1) 
+				{
+					e1.printStackTrace();
+				}
+			}
+		});
+		youdaoPraise.addActionListener(new ActionListener()									//有道点赞按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				try 
+				{
+					toServer.writeInt(2);     //请求更新点赞
+					toServer.writeInt(2);     //youdao
+					toServer.writeUTF(input.getText());
+				}
+				catch (IOException e1) 
+				{
+					e1.printStackTrace();
+				}
+			}
+		});
+		biyingPraise.addActionListener(new ActionListener()									//必应点赞按钮监听
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				try 
+				{
+					toServer.writeInt(2);     //请求更新点赞
+					toServer.writeInt(3);     //biying
+					toServer.writeUTF(input.getText());
+				}
+				catch (IOException e1) 
+				{
+					e1.printStackTrace();
+				}
+			}
+		});
+	
+		
+		logoff.addActionListener(new ActionListener(){//退出按钮监听
+			public void actionPerformed(ActionEvent e)
+			{
+				//update state of user login database
+				try
+			    {
+					toServer.writeInt(6);   
+					toServer.writeUTF(userName);
+					userName = null;
+				} 
+			    catch (IOException e1) 
+			    {
+			    	e1.printStackTrace();
+				}
+				userpanel.setVisible(false);
+				login.setVisible(true);
+				register.setVisible(true);
+				userText.setText("游客");
+				logoff.setVisible(false);
+			}
+		});
+		
+		userOnline.addListSelectionListener(new ListSelectionListener()
+		{
+
+			public void valueChanged(ListSelectionEvent e) 
+			{
+				System.out.println("选中列表!");
+				int select = userOnline.getSelectedIndex();
+				if (select != -1) 
+				{
+					String str = vector.get(select);
+					baiduUserId.setText(str);
+					youdaoUserId.setText(str);
+					biyingUserId.setText(str);
+				}
+			}
+		});
+		
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
+
 	}
+		
+		
 	
 	public void connect() 
 	{
@@ -215,6 +457,205 @@ public class ShowDictionary extends JFrame{
 			}
 		}
 	}
+	
+	public void sendCard(int choose)
+	{
+		try
+		{
+			int type = 1;
+			sendUserName = this.userName;
+			String receiveUserName;
+			
+			if(sendUserName != null)
+			{
+				if(choose == 0 || choose == 3)
+				{
+					receiveUserName = baiduUserId.getText();
+					sendTranslation = baiduInterpret.getText();
+				}
+				else if(choose == 1 || choose == 4)
+				{
+					receiveUserName = youdaoUserId.getText();
+					sendTranslation = youdaoInterpret.getText();
+				}
+				else
+				{
+					receiveUserName = biyingUserId.getText();
+					sendTranslation = biyingInterpret.getText();
+				}
+				
+				if(choose == 3 || choose == 4 || choose == 5)
+				{
+					toServer.writeInt(8);//群发
+					toServer.writeUTF(sendUserName);
+					toServer.writeUTF(sendTranslation);
+				}
+			
+				else if(!receiveUserName.equals("") && !sendTranslation.equals(""))
+				{
+					toServer.writeInt(type);
+					toServer.writeUTF(sendUserName);
+					toServer.writeUTF(receiveUserName);
+					toServer.writeUTF(sendTranslation);
+				}
+				else
+				{
+					final String message = "发送的消息不完善！";
+					SwingUtilities.invokeLater(new Runnable()
+					{   
+						public void run() 
+						{   
+							JOptionPane.showMessageDialog(null, message);
+						}   
+					}); 
+				}
+			toServer.flush();
+			}
+			else 
+			{
+				final String message = "请您先登录！";
+				SwingUtilities.invokeLater(new Runnable()
+				{   
+					public void run() 
+					{   
+						JOptionPane.showMessageDialog(null, message);
+					}   
+				}); 
+			}
+		}
+		catch(IOException ex)
+		{
+			System.out.println(ex);
+		}
+	}
+	
+	int sortPraise(int[] a)
+	{
+		if(a[0]>=a[1]&&a[1]>=a[2])
+			return 0;
+		else if(a[0]>=a[2]&&a[2]>=a[1])
+			return 1;
+		else if(a[1]>=a[0]&&a[0]>=a[2])
+			return 2;
+		else if(a[1]>=a[2]&&a[2]>=a[0])
+			return 3;
+		else if(a[2]>=a[0]&&a[0]>=a[1])
+			return 4;
+		else
+			return 5;
+	}
+	
+	
+	@SuppressWarnings("deprecation")
+	public void Login()
+	{
+		JPanel jplabel,jpin,jpf;
+		JLabel name,password;
+		
+		JTextField name_in;
+		JPasswordField password_in;
+
+		name = new JLabel("Name:");
+		password = new JLabel("password:");
+		jplabel = new JPanel(new GridLayout(2,1));
+		jplabel.add(name);
+		jplabel.add(password);
+		
+		name_in = new JTextField();
+		password_in = new JPasswordField();
+		jpin = new JPanel(new GridLayout(2,1));
+		jpin.add(name_in);
+		jpin.add(password_in);
+		
+		jpf = new JPanel(new BorderLayout());
+		jpf.add(jplabel,BorderLayout.WEST);
+		jpf.add(jpin,BorderLayout.CENTER);
+
+		JOptionPane optionPane = new JOptionPane(jpf, 
+				  JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		JDialog dialog = optionPane.createDialog(this, "登录");
+		dialog.setVisible(true);
+		int value = (int)optionPane.getValue();
+		
+		if(value == optionPane.YES_OPTION)
+		{
+			try 
+			{
+				toServer.writeInt(4);
+				toServer.writeUTF(name_in.getText());
+				toServer.writeUTF(password_in.getText());
+			} 
+			catch (IOException e) 
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
+	@SuppressWarnings("deprecation")
+	public void Register()
+	{
+		JPanel jplabel,jpin,jpf;
+	    JLabel name,password,password_confirm;
+		JPasswordField password_in,confirm_in;
+		JTextField name_in;
+
+		name = new JLabel("Name:");
+		password = new JLabel("password:");
+		password_confirm = new JLabel("password confirm:");
+		jplabel = new JPanel(new GridLayout(3,1));
+		jplabel.add(name);
+		jplabel.add(password);
+		jplabel.add(password_confirm);
+		
+		name_in = new JTextField();
+		password_in = new JPasswordField();
+		confirm_in = new JPasswordField();
+		jpin = new JPanel(new GridLayout(3,1));
+		jpin.add(name_in);
+		jpin.add(password_in);
+		jpin.add(confirm_in);
+		
+		jpf = new JPanel(new BorderLayout());
+		jpf.add(jplabel,BorderLayout.WEST);
+		jpf.add(jpin,BorderLayout.CENTER);
+
+		JOptionPane optionPane = new JOptionPane(jpf, 
+				  JOptionPane.PLAIN_MESSAGE, JOptionPane.OK_CANCEL_OPTION);
+		JDialog dialog = optionPane.createDialog(this, "注册");
+		dialog.setVisible(true);
+		int value =  (int)optionPane.getValue();
+		if(value == optionPane.YES_OPTION)
+		{
+			if(password_in.getText().equals(confirm_in.getText()))
+			{
+				try 
+				{
+					toServer.writeInt(3);//注册新号
+					toServer.writeUTF(name_in.getText());
+					toServer.writeUTF(password_in.getText());
+					toServer.writeUTF("localhost");
+					
+				} 
+				catch (IOException e) 
+				{
+					e.printStackTrace();
+				}
+			}
+			else
+			{
+				JOptionPane.showMessageDialog(null, "两次密码不一致，重新输入！");
+				Register();
+			}
+		}
+	}
+	
+	void Warning()
+	{
+		JOptionPane.showMessageDialog(null, "Wrong name or password!\nLog in again!", "Warning!",JOptionPane.WARNING_MESSAGE);  
+		Login();
+	}
+	
 	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
