@@ -179,9 +179,55 @@ public class ShowDictionary extends JFrame{
 		
 	}
 	
+	public void connect() 
+	{
+		try
+		{	
+			//create a socket to connect to the server
+			Socket socket = new Socket("localhost",8000);
+			//Socket socket = new Socket("172.26.110.46",8000);
+			fromServer = new DataInputStream(socket.getInputStream());
+			toServer = new DataOutputStream(socket.getOutputStream());
+		}
+			
+		catch(IOException ex)
+		{
+			System.out.println(ex);
+		}
+		
+		while(true)
+		{
+			int type;
+			try 
+			{
+				type = fromServer.readInt();                        				//读取Server发来的数据包类型
+				
+				//发送单词卡
+				if(type == 1)
+				{
+					
+				}
+					
+			}
+			catch (IOException e)
+			{
+				e.printStackTrace();
+			}
+		}
+	}
+	
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
+		ShowDictionary frame = new ShowDictionary();
+		frame.setTitle("Dictionary");
+		frame.setSize(900,700);
+		frame.setLocationRelativeTo(null);
+		
+		frame.setVisible(true);
+		JFrame.setDefaultLookAndFeelDecorated(true);
+		JDialog.setDefaultLookAndFeelDecorated(true);
 
+		frame.connect();
 	}
 
 }
