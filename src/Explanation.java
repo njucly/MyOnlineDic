@@ -145,7 +145,6 @@ public class Explanation {
 				explanation=word+"\n"+explanation;
 			return explanation;
 		} catch (MalformedURLException ex){
-			// TODO Auto-generated catch block
 			ex.printStackTrace();
 		} catch(IOException ex){
 			ex.printStackTrace();
@@ -179,7 +178,6 @@ public class Explanation {
 				explanation=word+"\n"+explanation;
 			return explanation;
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch(IOException e){}
 		
