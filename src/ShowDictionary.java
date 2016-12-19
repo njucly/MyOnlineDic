@@ -447,9 +447,233 @@ public class ShowDictionary extends JFrame{
 				//发送单词卡
 				if(type == 1)
 				{
+					try 
+					{
+						sendUserName = fromServer.readUTF();
+						sendTranslation = fromServer.readUTF();
+					} 
+					catch (IOException e1)
+					{
+						e1.printStackTrace();
+					}
 					
+					
+					SwingUtilities.invokeLater(new Runnable()
+					{   
+						String message = "From " + sendUserName + ":"+ "\n" + sendTranslation;
+				        public void run() 
+				        {   
+				        	JOptionPane.showMessageDialog(null, message);
+				         }   
+				     }); 
 				}
 					
+				//点赞次数
+				else if(type == 2)
+				{
+					threePraise = new int[3];
+					for(int i = 0;i < 3;i++)
+						threePraise[i] = fromServer.readInt();
+					//threePraise 数组是三个网站的点赞次数
+					baiduPraise.setText("赞 "+threePraise[0]);
+					youdaoPraise.setText("赞 "+threePraise[1]);
+					biyingPraise.setText("赞 "+threePraise[2]);
+				}
+				
+				//注册
+				else if(type == 3)
+				{
+					boolean isRegisterSuccess = fromServer.readBoolean();
+					if(isRegisterSuccess == true)
+					{
+						userName = fromServer.readUTF();
+						//得到了一个成功注册的用户，显示在右上角名字
+						login.setVisible(false);
+						register.setVisible(false);
+						logoff.setVisible(true);
+						userText.setText(userName); 
+						toServer.writeInt(5);
+						toServer.writeUTF(userName);
+					}
+					else
+					{
+						//注册失败，给用户提示  	Warning();
+						SwingUtilities.invokeLater(new Runnable() {   
+				            public void run() {   
+				            	JOptionPane.showMessageDialog(null, "The name has exist!\nTry again!","Warning",JOptionPane.WARNING_MESSAGE);  
+								Register();
+				            }   
+				        }); 
+					}
+				}
+				
+				//登录
+				else if(type == 4)
+				{
+					boolean isLoginSuccess = fromServer.readBoolean();
+					if(isLoginSuccess == true)
+					{
+						//登录成功，名字显示在右上角  ，不能再登录
+						userName = fromServer.readUTF();
+						
+						login.setVisible(false);
+						register.setVisible(false);
+						logoff.setVisible(true);
+						userText.setText(userName); 
+						registerAndLogin.add(userText);
+						toServer.writeInt(5);
+						toServer.writeUTF(userName);
+						//向Server请求获取在线用户列表信息
+					}
+					else
+					{
+						//登录失败，给用户提示  	Warning();
+						SwingUtilities.invokeLater(new Runnable() 
+						{   
+				            public void run() 
+				            {   
+				            	Warning();
+				            }   
+				        }); 
+					}
+					
+				}
+				
+				//获取所有在线用户列表
+				else if(type == 5)
+				{
+					System.out.println("现在在获取在线用户列表");
+					int length = fromServer.readInt();
+					vector.clear();
+					
+					if(length != 0)
+					{
+						String[] userList = new String[length];
+						for(int i = 0;i < length;i++)
+							userList[i] = fromServer.readUTF();
+						userpanel.setVisible(true);
+						for(int i = 0;i < length;i++)
+							vector.add(userList[i]);
+						userOnline.setListData(vector);
+			                
+					}
+					else
+						System.out.println("没有在线用户");
+					//获取了在线用户列表后，显示在图形界面中
+					
+				}
+				
+				//client请求退出
+				else if(type == 6);            							//Server更新数据库，Client不需要干什么
+				
+				//查询单词意思
+				else if(type == 7)
+				{
+					int flag = fromServer.readInt();
+					if(flag == 1)
+					{
+						for(int i = 0;i < 3;i++)
+							threeTranslation[i] = fromServer.readUTF();
+						for(int i = 0;i < 3;i++)
+							threePraise[i] = fromServer.readInt();
+					
+						if(baiduChoose.isSelected())
+						{
+							baidu.setVisible(true);
+							baiduInterpret.setText(threeTranslation[0]);
+						}	
+						if(youdaoChoose.isSelected())
+						{
+							youdao.setVisible(true);
+							youdaoInterpret.setText(threeTranslation[1]);
+						}	
+						if(biyingChoose.isSelected())
+						{
+							biying.setVisible(true);
+							biyingInterpret.setText(threeTranslation[2]);
+						}	
+						if((!baiduChoose.isSelected()) && (!youdaoChoose.isSelected()) && (!biyingChoose.isSelected()))
+						{
+							baidu.setVisible(true);
+							youdao.setVisible(true);
+							biying.setVisible(true);
+							
+							baiduInterpret.setText(threeTranslation[0]);
+							youdaoInterpret.setText(threeTranslation[1]);
+							biyingInterpret.setText(threeTranslation[2]);
+						}
+						int caseOfPraise = 0;
+						caseOfPraise = sortPraise(threePraise);
+						interpret.remove(baidu);
+						interpret.remove(youdao);
+						interpret.remove(biying);
+						switch(caseOfPraise)
+						{
+							case 0:interpret.add(baidu);interpret.add(youdao);interpret.add(biying);break;// 顺序为 百度 有道 必应
+							case 1:interpret.add(baidu);interpret.add(biying);interpret.add(youdao);break;// 顺序为 百度 必应 有道
+							case 2:interpret.add(youdao);interpret.add(baidu);interpret.add(biying);break;// 顺序为 有道 百度 必应
+							case 3:interpret.add(youdao);interpret.add(biying);interpret.add(baidu);break;// 顺序为 有道 必应 百度
+							case 4:interpret.add(biying);interpret.add(baidu);interpret.add(youdao);break;// 顺序为 必应 百度 有道
+							case 5:interpret.add(biying);interpret.add(youdao);interpret.add(baidu);break;// 顺序为 必应 有道 百度 
+						}
+						baiduPraise.setText("赞 "+threePraise[0]);
+						youdaoPraise.setText("赞 "+threePraise[1]);
+						biyingPraise.setText("赞 "+threePraise[2]);
+						}
+					
+					else 
+					{
+						baidu.setVisible(true);
+						youdao.setVisible(true);
+						biying.setVisible(true);
+						
+						baiduInterpret.setText("没有找到释义");
+						youdaoInterpret.setText("没有找到释义");
+						biyingInterpret.setText("没有找到释义");
+					}
+				}
+				else if(type == 8)
+				{
+					int length = fromServer.readInt();
+					vector.clear();
+					
+					String[] userList = new String[length];
+					for(int i = 0;i < length;i++)
+					{
+						userList[i] = fromServer.readUTF();
+						System.out.println(userList[i]);
+					}
+					
+					userpanel.setVisible(true);
+					for(int i = 0;i < length;i++)
+						vector.add(userList[i]);
+					userOnline.setListData(vector);
+				}
+				else if(type == 9)              //指定的用户没有找到或者不在线
+				{
+					final String message = "指定的用户不在线或者不存在这样的用户！";
+					SwingUtilities.invokeLater(new Runnable()
+					{   
+			            public void run() 
+			            {   
+			            	JOptionPane.showMessageDialog(null, message);
+			            }   
+			        }); 
+				}
+				
+				else if(type == 10)             //欲登录的用户已登录状态，不能再登录
+				{
+					final String message = "该用户已登录，不能再登录！";
+					SwingUtilities.invokeLater(new Runnable()
+					{   
+			            public void run() 
+			            {   
+			            	JOptionPane.showMessageDialog(null, message, "Warning!",JOptionPane.WARNING_MESSAGE);  
+			            	Login();
+			            }   
+			        }); 
+				}
+				
 			}
 			catch (IOException e)
 			{
